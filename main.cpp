@@ -1,5 +1,4 @@
 #include <stdio.h>
-#include <stdlib.h>
 #include <string.h>
 #include <inttypes.h>
 
@@ -142,22 +141,24 @@ int main(int argc, const char* argv[]) {
   wasm_module_delete(module);
   wasm_instance_delete(instance);
 
-  // Call.
-  printf("Calling export...\n");
-  wasm_val_t as[2] = { WASM_I32_VAL(3), WASM_I32_VAL(4) };
-  wasm_val_t rs[1] = { WASM_INIT_VAL };
-  wasm_val_vec_t args = WASM_ARRAY_VEC(as);
-  wasm_val_vec_t results = WASM_ARRAY_VEC(rs);
-  if (wasm_func_call(run_func, &args, &results)) {
-    printf("> Error calling function!\n");
-    return 1;
+  // execute many many times to demonstrate unbounded memory allocations
+  for (uint32_t i = 0; i < 5000000; i++) {
+    // Call.
+    printf("Calling export...\n");
+    wasm_val_t as[2] = { WASM_I32_VAL(3), WASM_I32_VAL(4) };
+    wasm_val_t rs[1] = { WASM_INIT_VAL };
+    wasm_val_vec_t args = WASM_ARRAY_VEC(as);
+    wasm_val_vec_t results = WASM_ARRAY_VEC(rs);
+    if (wasm_func_call(run_func, &args, &results)) {
+      printf("> Error calling function!\n");
+      return 1;
+    }
+    // Print result.
+    printf("Printing result...\n");
+    printf("> %u\n", rs[0].of.i32);
   }
 
   wasm_extern_vec_delete(&exports);
-
-  // Print result.
-  printf("Printing result...\n");
-  printf("> %u\n", rs[0].of.i32);
 
   // Shut down.
   printf("Shutting down...\n");
